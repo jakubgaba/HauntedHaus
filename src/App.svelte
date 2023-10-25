@@ -17,12 +17,22 @@
     const scene = new THREE.Scene();
 
     //Fog
-    const fog = new THREE.Fog('#262837', 1, 15)
-    scene.fog = fog
+    const fog = new THREE.Fog("#262837", 1, 15);
+    scene.fog = fog;
     /**
      * Textures
      */
     const textureLoader = new THREE.TextureLoader();
+
+    const doorColorTexture = textureLoader.load("/door/color.jpg");
+    const doorAlphaTexture = textureLoader.load("/door/alpha.jpg");
+    const doorAmbientOcclusionTexture = textureLoader.load(
+        "/door/ambientOcclusion.jpg"
+    );
+    const doorHeightTexture = textureLoader.load("/door/height.jpg");
+    const doorNormalTexture = textureLoader.load("/door/normal.jpg");
+    const doorMetalnessTexture = textureLoader.load("/door/metalness.jpg");
+    const doorRoughnessTexture = textureLoader.load("/door/roughness.jpg");
 
     /**
      * House
@@ -98,15 +108,15 @@
     const graveMaterial = new THREE.MeshStandardMaterial({ color: "grey" });
 
     for (let i = 0; i < 50; i++) {
-        const angle = Math.random()* Math.PI*2
-        const radius = 6 + Math.random()*8
-        const x = Math.sin(angle) * radius
-        const z = Math.cos(angle) * radius
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 6 + Math.random() * 8;
+        const x = Math.sin(angle) * radius;
+        const z = Math.cos(angle) * radius;
 
-        const grave = new THREE.Mesh(graveGeometry,graveMaterial)
-        grave.position.set(x,0.3,z)
-        grave.rotation.y = Math.random() * 0.5
-        grave.rotation.z = Math.random() * 0.2
+        const grave = new THREE.Mesh(graveGeometry, graveMaterial);
+        grave.position.set(x, 0.3, z);
+        grave.rotation.y = Math.random() * 0.5;
+        grave.rotation.z = Math.random() * 0.2;
         graves.add(grave);
     }
 
@@ -114,12 +124,12 @@
      * Lights
      */
     // Ambient light
-    const ambientLight = new THREE.AmbientLight("#ffffff", .3);
+    const ambientLight = new THREE.AmbientLight("#ffffff", 0.3);
     gui.add(ambientLight, "intensity").min(0).max(1).step(0.001);
     scene.add(ambientLight);
 
     // Directional light
-    const moonLight = new THREE.DirectionalLight("#b9d5ff", .1);
+    const moonLight = new THREE.DirectionalLight("#b9d5ff", 0.1);
     moonLight.position.set(4, 5, -2);
     gui.add(moonLight, "intensity").min(0).max(3).step(0.001);
     gui.add(moonLight.position, "x").min(-5).max(5).step(0.001);
@@ -127,11 +137,12 @@
     gui.add(moonLight.position, "z").min(-5).max(5).step(0.001);
     scene.add(moonLight);
 
-
     //Door light
-    const doorLight = new THREE.PointLight('#ff7d46', 2.5, 100)
-    doorLight.position.set(0, 2.5, 4)
+    const doorLight = new THREE.PointLight("#ff7d46", 1, 15);
+    doorLight.position.set(0, 2.15, 3.5);
+
     house.add(doorLight);
+
     /**
      * Sizes
      */
@@ -150,10 +161,9 @@
         camera.updateProjectionMatrix();
 
         // Update renderer
-        renderer.setSize(sizes.width, sizes.height)
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-       
-    })
+        renderer.setSize(sizes.width, sizes.height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
 
     /**
      * Camera
@@ -182,9 +192,9 @@
         canvas: canvas,
     });
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setClearColor('#262837')
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor("#262837");
     /**
      * Animate
      */
