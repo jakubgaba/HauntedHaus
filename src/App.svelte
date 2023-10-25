@@ -1,149 +1,143 @@
 <script>
-  import * as THREE from "three";
-  import gsap from "gsap";
- 
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import GUI from 'lil-gui/dist/lil-gui.esm.min'; 
+
+THREE.ColorManagement.enabled = false
+
+/**
+ * Base
+ */
+// Debug
+const gui = new GUI();
+// Canvas
+const canvas = document.querySelector('canvas.webgl')
+
+// Scene
+const scene = new THREE.Scene()
+
+/**
+ * Textures
+ */
+const textureLoader = new THREE.TextureLoader()
+
+/**
+ * House
+ */
+const house = new THREE.Group()
+scene.add(house);
 
 
-  //Textures
-  const textureLoader = new THREE.TextureLoader()
-  const texture = textureLoader.load('/color.jpg')
-  // Scene
-  const scene = new THREE.Scene();
+//Walls
+const walls = new THREE.Mesh(
+    new THREE.BoxGeometry(6,2.5,6),
+    new THREE.MeshStandardMaterial({color: '#ac8e82'})
+)
+walls.position.y = 2.5 / 2
+scene.add(walls);
 
-  //Group
-  const group = new THREE.Group();
-  scene.add(group);
+// Floor
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 20),
+    new THREE.MeshStandardMaterial({ color: '#a9c388' })
+)
+floor.rotation.x = - Math.PI * 0.5
+floor.position.y = 0
+scene.add(floor)
 
+//Roof
+const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(5, 1, 4),
+    new THREE.MeshStandardMaterial({color: "#b35f45"})
+)
+roof.position.y = 2.5 + 0.5;
+roof.rotation.y = Math.PI / 4;
+scene.add(roof)
+/**
+ * Lights
+ */
+// Ambient light
+const ambientLight = new THREE.AmbientLight('#ffffff', 1)
+gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001)
+scene.add(ambientLight)
 
-  //Geometry
-  const geometry = new THREE.BufferGeometry()
+// Directional light
+const moonLight = new THREE.DirectionalLight('#ffffff', 1)
+moonLight.position.set(4, 5, - 2)
+gui.add(moonLight, 'intensity').min(0).max(3).step(0.001)
+gui.add(moonLight.position, 'x').min(- 5).max(5).step(0.001)
+gui.add(moonLight.position, 'y').min(- 5).max(5).step(0.001)
+gui.add(moonLight.position, 'z').min(- 5).max(5).step(0.001)
+scene.add(moonLight)
 
-const count = 50
-const positionsArray = new Float32Array(count*3*3)
-for(let i = 0; i<count*3*3; i++){
-  positionsArray[i] = Math.random() -0.5;
+/**
+ * Sizes
+ */
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight
 }
 
-const positionAttribute = new THREE.BufferAttribute(positionsArray,3)
-geometry.setAttribute('position', positionAttribute);
-  // const positionsArray= new Float32Array([
-  //   0,0,0,
-  //   0,1,0,
-  //   1,0,0
-  // ])
+window.addEventListener('resize', () =>
+{
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
 
-  // const positionAttribute = new THREE.BufferAttribute(positionsArray, 3)
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
 
-  geometry.setAttribute('position', positionAttribute);
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
 
+/**
+ * Camera
+ */
+// Base camera
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+camera.position.x = 4
+camera.position.y = 2
+camera.position.z = 5
+scene.add(camera)
 
-  //Material
-  const material = new THREE.MeshBasicMaterial({
-    color: 0xff000,
-    wireframe: true
-  })
-  //Mesh
-  const mesh = new THREE.Mesh(geometry, material)
-  scene.add(mesh);
-  // const cube1 = new THREE.Mesh(
-  //   new THREE.BoxGeometry(1, 1, 1),
-  //   new THREE.MeshBasicMaterial({ color: 0xff0000 })
-  // );
+// Controls
+// @ts-ignore
+const controls = new OrbitControls(camera, canvas)
+controls.enableDamping = true
 
+/**
+ * Renderer
+ */
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvas
+})
+renderer.outputColorSpace = THREE.LinearSRGBColorSpace
+renderer.setSize(sizes.width, sizes.height)
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-  // group.add(cube1);
+/**
+ * Animate
+ */
+const clock = new THREE.Clock()
 
-  // Sizes
-  const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
+const tick = () =>
+{
+    const elapsedTime = clock.getElapsedTime()
 
-  //Resizing
-  window.addEventListener("resize", () => {
-    //Update sizes
-    sizes.width = window.innerWidth;
-    sizes.height = window.innerHeight;
+    // Update controls
+    controls.update()
 
-    //Update camera
-    camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
+    // Render
+    renderer.render(scene, camera)
 
-    //Update renderer
-    renderer.setSize(sizes.width, sizes.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  });
+    // Call tick again on the next frame
+    window.requestAnimationFrame(tick)
+}
 
-  window.addEventListener("dblclick", () => {
-    if (!document.fullscreenElement) {
-      console.log("dd");
-    } else {
-      console.log("leave");
-    }
-  });
-
-  // Camera
-  const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-  camera.translateZ(3);
-  scene.add(camera);
-
-  
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({
-    canvas: document.querySelector("canvas.webgl"),
-  });
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  //Time
-  let time = Date.now();
-  //Clock
-  const clock = new THREE.Clock();
-
-
-  //Animations
-  const tick = () => {
-    //Clock
-    const elapsedTime = clock.getElapsedTime();
-    
-    window.requestAnimationFrame(tick);
-    // cube1.rotation.y = Math.sin(elapsedTime);
-   
-    //Renderer
-    renderer.render(scene, camera);
-  };
-  tick();
-
-   // const cube2 = new THREE.Mesh(
-  //   new THREE.BoxGeometry(1, 1, 1),
-  //   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-  // );
-
-  // const cube3 = new THREE.Mesh(
-  //   new THREE.BoxGeometry(1, 1, 1),
-  //   new THREE.MeshBasicMaterial({ color: 0x0000ff })
-  // );
-
-  // cube2.translateX(-2);
-  // cube3.translateX(2);
-
-// const aspectRation = sizes.width / sizes.height;
-  // const camera = new THREE.OrthographicCamera(-1 * aspectRation, 1 * aspectRation, 1, -1, 0.1, 100);
-  // camera.position.x = 2;
-  // camera.position.z = 2;
-  // camera.position.y = 2;
-  // camera.lookAt(cube1.position);
-  // scene.add(camera);
-
-  // gsap.to(cube1.rotation, { duration: 1, delay:1, y: 3 });
-
-//times
-    // const currentTime = Date.now();
-    // const deltaTime = currentTime - time;
-    // time = currentTime;
-
- // cube1.position.x = Math.cos(elapsedTime);
-    // camera.lookAt(cube1.position);
-
+tick()
 </script>
 
 <main />
